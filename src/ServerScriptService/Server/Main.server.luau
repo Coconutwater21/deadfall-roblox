@@ -59,11 +59,22 @@ RunService.Heartbeat:Connect(function(rawDt: number)
 	end
 
 	for player, state in PlayerState.all() do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if state.health <= 0 then
-			local character = player.Character
-			local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 			if humanoid and humanoid.Health > 0 then
 				humanoid.Health = 0
+			end
+		else
+			-- Arena wraps like a torus (porting spec §1) -- snap the player
+			-- to the opposite edge the instant they cross the boundary.
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if root then
+				local pos = (root :: BasePart).Position
+				local wrapped = Config.wrapPosition(pos)
+				if wrapped ~= pos then
+					(root :: BasePart).CFrame = CFrame.new(wrapped) * (root :: BasePart).CFrame.Rotation
+				end
 			end
 		end
 		PlayerService.syncStats(state)

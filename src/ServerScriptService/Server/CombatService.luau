@@ -153,12 +153,18 @@ local function fire(player: Player, aimDirection: Vector3)
 		local occluded = occlusionDistance(origin, pelletDir, rangeStuds)
 		local hits = collectHitsAlongRay(origin, pelletDir, occluded)
 
+		-- Tracer endpoint: the farthest thing this pellet actually reached,
+		-- so the visual line matches what got hit (or the wall it stopped
+		-- at, or its max range if it hit nothing).
+		local tracerEnd = origin + pelletDir * occluded
+
 		if weapon.explosionRadius > 0 then
-			local impact = origin + pelletDir * occluded
+			local impact = tracerEnd
 			if #hits > 0 then
 				local firstRuntime = ZombieService.getRuntime(hits[1].model)
 				if firstRuntime then
 					impact = firstRuntime.root.Position
+					tracerEnd = impact
 				end
 			end
 			detonateBlast(impact, damage, weapon.explosionRadius * Config.STUD_SCALE, player)
@@ -166,9 +172,16 @@ local function fire(player: Player, aimDirection: Vector3)
 			for _, hit in hits do
 				applyHit(hit.model, damage, player)
 			end
+			if #hits > 0 then
+				tracerEnd = origin + pelletDir * occluded
+			end
 		elseif #hits > 0 then
+			local runtime = ZombieService.getRuntime(hits[1].model)
+			tracerEnd = if runtime then runtime.root.Position else tracerEnd
 			applyHit(hits[1].model, damage, player)
 		end
+
+		Remotes.ShootEffect:FireAllClients({ origin = origin, endPoint = tracerEnd })
 	end
 end
 

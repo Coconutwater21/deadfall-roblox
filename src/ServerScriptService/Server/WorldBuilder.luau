@@ -85,16 +85,20 @@ local function buildFloor(parent: Instance)
 	floor.Parent = parent
 end
 
--- Purely visual: a thin strip along the boundary so players can see where
--- they'll wrap to the opposite side. CanCollide is false on purpose.
+-- Purely visual: a thin ground-level stripe along the boundary so players
+-- can see where they'll wrap to the opposite side. Flat (not a wall) and
+-- non-collidable on purpose -- this used to be a 1.2-stud-tall wall, which
+-- read as a solid obstacle right in the camera's face when a player walked
+-- up to the edge. See Main.server.luau / ZombieService.luau for the actual
+-- wrap-teleport logic this stripe is just marking.
 local function buildWrapBoundary(parent: Instance)
 	local half = Config.ARENA_HALF_STUDS
-	local thickness = 0.6
+	local thickness = 1.0
 	local sides = {
-		{ Vector3.new(half * 2, 1.2, thickness), CFrame.new(0, 0.6, -half) },
-		{ Vector3.new(half * 2, 1.2, thickness), CFrame.new(0, 0.6, half) },
-		{ Vector3.new(thickness, 1.2, half * 2), CFrame.new(-half, 0.6, 0) },
-		{ Vector3.new(thickness, 1.2, half * 2), CFrame.new(half, 0.6, 0) },
+		{ Vector3.new(half * 2, 0.05, thickness), CFrame.new(0, 0.03, -half) },
+		{ Vector3.new(half * 2, 0.05, thickness), CFrame.new(0, 0.03, half) },
+		{ Vector3.new(thickness, 0.05, half * 2), CFrame.new(-half, 0.03, 0) },
+		{ Vector3.new(thickness, 0.05, half * 2), CFrame.new(half, 0.03, 0) },
 	}
 	for i, side in sides do
 		local part = Instance.new("Part")

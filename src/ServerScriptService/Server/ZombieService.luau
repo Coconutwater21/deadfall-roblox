@@ -158,7 +158,7 @@ local function nearestPlayerRoot(fromPos: Vector3): (BasePart?, Player?)
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 		if root and humanoid and humanoid.Health > 0 and state.health > 0 then
-			local dist = (root.Position - fromPos).Magnitude
+			local dist = Config.wrappedDelta(fromPos, root.Position).Magnitude
 			if dist < bestDist then
 				bestDist = dist
 				best = root :: BasePart
@@ -185,15 +185,15 @@ function ZombieService.update(dt: number)
 			continue
 		end
 
-		local delta = targetRoot.Position - runtime.root.Position
-		delta = Vector3.new(delta.X, 0, delta.Z)
+		local delta = Config.wrappedDelta(runtime.root.Position, targetRoot.Position)
 		local distance = delta.Magnitude
 		local reach = runtime.radiusStuds + runtime.meleeReachStuds
 
 		if distance > reach then
 			local dir = delta.Unit
 			local step = dir * runtime.speedStuds * dt
-			runtime.root.CFrame = CFrame.new(runtime.root.Position + step, runtime.root.Position + step + dir)
+			local newPos = Config.wrapPosition(runtime.root.Position + step)
+			runtime.root.CFrame = CFrame.new(newPos, newPos + dir)
 		elseif runtime.attackCooldown <= 0 then
 			local cooldown = BRUTE_LIKE[runtime.kind] and BRUTE_ATTACK_COOLDOWN or DEFAULT_ATTACK_COOLDOWN
 			runtime.attackCooldown = cooldown

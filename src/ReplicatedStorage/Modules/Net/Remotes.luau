@@ -19,6 +19,7 @@ local EVENT_NAMES = {
 	"Notify", -- server -> client: {text: string}
 	"DamageFloater", -- server -> client: {worldPosition: Vector3, amount: number, kind: string}
 	"WaveBanner", -- server -> client: {wave: number}
+	"ShootEffect", -- server -> client: {origin: Vector3, endPoint: Vector3}
 }
 
 local function getOrCreateFolder(): Folder

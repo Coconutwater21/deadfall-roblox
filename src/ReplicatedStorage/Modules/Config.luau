@@ -40,4 +40,39 @@ function Config.studsToUnits(studs: number): number
 	return studs / Config.STUD_SCALE
 end
 
+-- Ported from _wrap(Offset p) in survival_engine.dart -- the arena is a
+-- wrapping torus, not walled. Wraps a single X or Z coordinate into
+-- [-ARENA_HALF_STUDS, ARENA_HALF_STUDS].
+function Config.wrapCoord(v: number): number
+	local half = Config.ARENA_HALF_STUDS
+	local span = half * 2
+	if v > half then
+		return v - span * math.ceil((v - half) / span)
+	elseif v < -half then
+		return v + span * math.ceil((-half - v) / span)
+	end
+	return v
+end
+
+function Config.wrapPosition(pos: Vector3): Vector3
+	return Vector3.new(Config.wrapCoord(pos.X), pos.Y, Config.wrapCoord(pos.Z))
+end
+
+-- Ported from _wrappedDelta(from, to) -- shortest signed delta between two
+-- points across the wrap boundary, so AI chasing near one edge correctly
+-- takes the short way around instead of the long way across the arena.
+function Config.wrappedDelta(from: Vector3, to: Vector3): Vector3
+	local span = Config.ARENA_HALF_STUDS * 2
+	local function axis(f: number, t: number): number
+		local raw = t - f
+		if raw > Config.ARENA_HALF_STUDS then
+			raw -= span
+		elseif raw < -Config.ARENA_HALF_STUDS then
+			raw += span
+		end
+		return raw
+	end
+	return Vector3.new(axis(from.X, to.X), 0, axis(from.Z, to.Z))
+end
+
 return Config
